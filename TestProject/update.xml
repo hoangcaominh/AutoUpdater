@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoUpdater>
+  <update appId="TestProject">
+    <version>1.0.0.0</version>
+    <url>file:///D:/TestProject/TestProject.zip</url>
+    <fileName>TestProject.zip</fileName>
+    <md5></md5>
+    <description></description>
+    <launchArgs></launchArgs>
+  </update>
+</AutoUpdater>
