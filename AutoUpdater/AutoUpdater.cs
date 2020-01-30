@@ -1,9 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Diagnostics;
 using System.IO;
 using System.Windows.Forms;
@@ -13,19 +9,19 @@ namespace AutoUpdater
 {
     public class Updater
     {
-        private IAutoUpdater applicationInfo;
-        private BackgroundWorker bgWorker;
+        private readonly IAutoUpdater applicationInfo;
+        private readonly BackgroundWorker bgWorker;
 
         public Updater(IAutoUpdater applicationInfo)
         {
             this.applicationInfo = applicationInfo;
 
-            this.bgWorker = new BackgroundWorker();
-            this.bgWorker.DoWork += new DoWorkEventHandler(bgWorker_DoWork);
-            this.bgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(bgWorker_RunWorkerCompleted);
+            bgWorker = new BackgroundWorker();
+            bgWorker.DoWork += new DoWorkEventHandler(BgWorker_DoWork);
+            bgWorker.RunWorkerCompleted += new RunWorkerCompletedEventHandler(BgWorker_RunWorkerCompleted);
         }
 
-        private void bgWorker_DoWork(object sender, DoWorkEventArgs e)
+        private void BgWorker_DoWork(object sender, DoWorkEventArgs e)
         {
             IAutoUpdater application = (IAutoUpdater)e.Argument;
 
@@ -35,7 +31,7 @@ namespace AutoUpdater
                 e.Result = AutoUpdaterConfig.Parse(application.UpdateConfigLocation, application.ApplicationId);
         }
 
-        private void bgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             if (e.Cancelled)
             {
@@ -49,26 +45,26 @@ namespace AutoUpdater
             {
                 AutoUpdaterConfig update = (AutoUpdaterConfig)e.Result;
 
-                if (update != null && update.IsNewerVersion(this.applicationInfo.ApplicationAssembly.GetName().Version))
+                if (update != null && update.IsNewerVersion(applicationInfo.ApplicationAssembly.GetName().Version))
                 {
                     if (MessageBox.Show("A newer version is available. Proceed to download?", "Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
-                        this.DownloadUpdate(update);
+                        DownloadUpdate(update);
                 }
             }
         }
 
         public void Update()
         {
-            if (!this.bgWorker.IsBusy)
+            if (!bgWorker.IsBusy)
             {
-                this.bgWorker.RunWorkerAsync(this.applicationInfo);
+                bgWorker.RunWorkerAsync(applicationInfo);
             }
         }
 
         private void DownloadUpdate(AutoUpdaterConfig update)
         {
-            AutoUpdaterDownloadForm form = new AutoUpdaterDownloadForm(update.Uri, update.MD5, this.applicationInfo.ApplicationIcon);
-            DialogResult result = form.ShowDialog(this.applicationInfo.Context);
+            AutoUpdaterDownloadForm form = new AutoUpdaterDownloadForm(update.Uri, update.MD5, applicationInfo.ApplicationIcon);
+            DialogResult result = form.ShowDialog(applicationInfo.Context);
 
             if (result == DialogResult.OK)
             {
@@ -112,11 +108,13 @@ namespace AutoUpdater
                 string argument_update_start = argument_update + " & start \"\" /D \"{1}\" \"{2}\" {3} & call sendKeys.bat \"{2}\" \"\"";
                 string argument = argument_update_start;
 
-                ProcessStartInfo info = new ProcessStartInfo();
-                info.Arguments = string.Format(argument, tempFolder, parentFolder, exeFile, launchArgs);
-                info.WindowStyle = ProcessWindowStyle.Hidden;
-                info.CreateNoWindow = true;
-                info.FileName = "cmd.exe";
+                ProcessStartInfo info = new ProcessStartInfo
+                {
+                    Arguments = string.Format(argument, tempFolder, parentFolder, exeFile, launchArgs),
+                    WindowStyle = ProcessWindowStyle.Hidden,
+                    CreateNoWindow = true,
+                    FileName = "cmd.exe"
+                };
                 Process.Start(info);
                 
                 /*

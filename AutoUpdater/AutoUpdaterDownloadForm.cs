@@ -9,59 +9,53 @@ namespace AutoUpdater
 {
     internal partial class AutoUpdaterDownloadForm : Form
     {
-        private WebClient webClient;
+        private readonly WebClient webClient;
+        private readonly string md5;
 
-        private string tempFile;
-
-        private string md5;
-
-        internal string TempFilePath
-        {
-            get { return this.tempFile; }
-        }
+        internal string TempFilePath { get; }
 
         internal AutoUpdaterDownloadForm(Uri location, string md5, Icon programIcon)
         {
             InitializeComponent();
 
             if (programIcon != null)
-                this.Icon = programIcon;
+                Icon = programIcon;
 
-            this.tempFile = Path.GetTempFileName();
+            TempFilePath = Path.GetTempFileName();
             this.md5 = md5;
 
             webClient = new WebClient();
             webClient.DownloadProgressChanged += new DownloadProgressChangedEventHandler(WebClient_DownloadProgressChanged);
             webClient.DownloadFileCompleted += new AsyncCompletedEventHandler(WebClient_DownloadFileCompleted);
 
-            try { webClient.DownloadFileAsync(location, this.tempFile); }
-            catch { this.DialogResult = DialogResult.No; this.Close(); }
+            try { webClient.DownloadFileAsync(location, TempFilePath); }
+            catch { DialogResult = DialogResult.No; Close(); }
         }
 
         private void WebClient_DownloadProgressChanged(object sender, DownloadProgressChangedEventArgs e)
         {
-            this.downloadProgress.Value = e.ProgressPercentage;
-            this.downloadInfo.Text = String.Format("{0} B / {1} B", e.BytesReceived, e.TotalBytesToReceive);
+            downloadProgress.Value = e.ProgressPercentage;
+            downloadInfo.Text = String.Format("{0} B / {1} B", e.BytesReceived, e.TotalBytesToReceive);
         }
 
         private void WebClient_DownloadFileCompleted(object sender, AsyncCompletedEventArgs e)
         {
             if (e.Error != null)
             {
-                this.DialogResult = DialogResult.No;
-                this.Close();
+                DialogResult = DialogResult.No;
+                Close();
             }
             else if (e.Cancelled)
             {
-                this.DialogResult = DialogResult.Abort;
-                this.Close();
+                DialogResult = DialogResult.Abort;
+                Close();
             }
             else
             {
                 downloadInfo.Text = "Verifying Download...";
                 downloadProgress.Style = ProgressBarStyle.Marquee;
 
-                bgWorker.RunWorkerAsync(new string[] { this.tempFile, this.md5 });
+                bgWorker.RunWorkerAsync(new string[] { TempFilePath, md5 });
             }
         }
 
@@ -78,8 +72,8 @@ namespace AutoUpdater
 
         private void BgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            this.DialogResult = (DialogResult)e.Result;
-            this.Close();
+            DialogResult = (DialogResult)e.Result;
+            Close();
         }
 
         private void AutoUpdaterDownloadForm_FormClosed(object sender, FormClosedEventArgs e)
@@ -87,13 +81,13 @@ namespace AutoUpdater
             if (webClient.IsBusy)
             {
                 webClient.CancelAsync();
-                this.DialogResult = DialogResult.Abort;
+                DialogResult = DialogResult.Abort;
             }
 
             if (bgWorker.IsBusy)
             {
                 bgWorker.CancelAsync();
-                this.DialogResult = DialogResult.Abort;
+                DialogResult = DialogResult.Abort;
             }
         }
     }

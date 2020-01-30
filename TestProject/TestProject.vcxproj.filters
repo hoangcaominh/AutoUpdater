@@ -18,18 +18,15 @@
     <ClCompile Include="MyForm.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="AssemblyInfo.h">
-      <Filter>Header Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AssemblyInfo.cpp">
+    <ClCompile Include="ApplicationInfo.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ApplicationInfo.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="MyForm.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ApplicationInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
