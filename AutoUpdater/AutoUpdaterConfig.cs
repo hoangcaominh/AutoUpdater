@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
-using System.Xml;
+using System.Windows.Forms;
+using Newtonsoft.Json.Linq;
 
 namespace AutoUpdater
 {
@@ -8,23 +9,23 @@ namespace AutoUpdater
     {
         internal Version Version { get; }
 
+        internal string FileName { get; }
+
         internal Uri Uri { get; }
 
-        internal string FileName { get; }
+        internal string Executable { get; }
 
         internal string MD5 { get; }
 
-        internal string Description { get; }
-
         internal string LaunchArgs { get; }
 
-        internal AutoUpdaterConfig(Version version, Uri uri, string fileName, string md5, string description, string launchArgs)
+        internal AutoUpdaterConfig(Version version, Uri uri, string fileName, string executable, string md5, string launchArgs)
         {
             Version = version as Version;
             Uri = uri as Uri;
             FileName = fileName as string;
+            Executable = executable as string;
             MD5 = md5 as string;
-            Description = description as string;
             LaunchArgs = launchArgs as string;
         }
 
@@ -37,7 +38,7 @@ namespace AutoUpdater
         {
             if (location.ToString().StartsWith("file"))
             {
-                return System.IO.File.Exists(location.LocalPath);
+                return System.IO.Directory.Exists(location.LocalPath);
             }
             else
             {
@@ -49,33 +50,40 @@ namespace AutoUpdater
 
                     return res.StatusCode == HttpStatusCode.OK;
                 }
-                catch { return false; }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return false;
+                }
             }
         }
 
-        internal static AutoUpdaterConfig Parse(Uri location, string appId)
+        internal static AutoUpdaterConfig Parse(Uri location)
         {
             try
             {
-                XmlDocument doc = new XmlDocument();
-                doc.Load(location.AbsoluteUri);
+                JObject json = new JObject();
+                using (WebClient wc = new WebClient())
+                {
+                    Uri info = new Uri(location, "update.json");
+                    json = JObject.Parse(wc.DownloadString(info.AbsoluteUri));
+                }
 
-                XmlNode node = doc.DocumentElement.SelectSingleNode("//update[@appId='" + appId + "']");
+                Version version = Version.Parse(json["version"].ToObject<string>());
+                string filename = json["filename"].ToObject<string>();
+                Uri uri = new Uri(location, filename);
+                string executable = json["executable"].ToObject<string>();
+                string md5 = json["md5"].ToObject<string>();
+                string launchArgs = json["launchArgs"].ToObject<string>();
 
-                if (node == null)
-                    return null;
-
-                Version version = Version.Parse(node["version"].InnerText);
-                Uri uri = new Uri(node["url"].InnerText);
-                string fileName = node["fileName"].InnerText;
-                string md5 = node["md5"].InnerText;
-                string description = node["description"].InnerText;
-                string launchArgs = node["launchArgs"].InnerText;
-
-                AutoUpdaterConfig ret = new AutoUpdaterConfig(version, uri, fileName, md5, description, launchArgs);
+                AutoUpdaterConfig ret = new AutoUpdaterConfig(version, uri, filename, executable, md5, launchArgs);
                 return ret;
             }
-            catch { return null; }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return null;
+            }
         }
     }
 }

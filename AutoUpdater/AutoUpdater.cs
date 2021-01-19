@@ -25,10 +25,10 @@ namespace AutoUpdater
         {
             IAutoUpdater application = (IAutoUpdater)e.Argument;
 
-            if (!AutoUpdaterConfig.ExistsOnServer(application.UpdateConfigLocation))
+            if (!AutoUpdaterConfig.ExistsOnServer(application.UpdateInfoLocation))
                 e.Cancel = true;
             else
-                e.Result = AutoUpdaterConfig.Parse(application.UpdateConfigLocation, application.ApplicationId);
+                e.Result = AutoUpdaterConfig.Parse(application.UpdateInfoLocation);
         }
 
         private void BgWorker_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
@@ -45,9 +45,9 @@ namespace AutoUpdater
             {
                 AutoUpdaterConfig update = (AutoUpdaterConfig)e.Result;
 
-                if (update != null && update.IsNewerVersion(applicationInfo.ApplicationAssembly.GetName().Version))
+                if (update != null && update.IsNewerVersion(applicationInfo.ApplicationVersion))
                 {
-                    if (MessageBox.Show("A newer version is available. Proceed to download?", "Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
+                    if (MessageBox.Show("A newer version is available. Would you like to download?", "Update", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes)
                         DownloadUpdate(update);
                 }
             }
@@ -68,7 +68,7 @@ namespace AutoUpdater
 
             if (result == DialogResult.OK)
             {
-                UpdateApplication(form.TempFilePath, Path.GetDirectoryName(this.applicationInfo.ApplicationAssembly.Location), update.FileName, update.LaunchArgs);
+                UpdateApplication(form.TempFilePath, Path.GetDirectoryName(applicationInfo.ApplicationAssembly.Location), update.Executable, update.LaunchArgs);
 
                 Application.Exit();
             }
@@ -105,7 +105,7 @@ namespace AutoUpdater
                 
                 // Replace old content with the extracted one
                 string argument_update = "/C choice /C Y /N /D Y /T 2 & move /Y \"{0}" + @"\*" + "\" \"{1}\" & rmdir /Q /S \"{0}\"";
-                string argument_update_start = argument_update + " & start \"\" /D \"{1}\" \"{2}\" {3} & call sendKeys.bat \"{2}\" \"\"";
+                string argument_update_start = argument_update + " & start \"\" /D \"{1}\" \"{2}\" {3}";
                 string argument = argument_update_start;
 
                 ProcessStartInfo info = new ProcessStartInfo

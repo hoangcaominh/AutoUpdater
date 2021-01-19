@@ -10,11 +10,9 @@ using namespace System::Runtime::InteropServices;
 // associated with an assembly.
 //
 [assembly:AssemblyTitleAttribute(L"TestProject")];
-[assembly:AssemblyDescriptionAttribute(Assembly_Description)] ;
 [assembly:AssemblyConfigurationAttribute(L"")] ;
 [assembly:AssemblyCompanyAttribute(L"")] ;
 [assembly:AssemblyProductAttribute(L"TestProject")] ;
-[assembly:AssemblyCopyrightAttribute(Assembly_Copyright)] ;
 [assembly:AssemblyTrademarkAttribute(L"")] ;
 [assembly:AssemblyCultureAttribute(L"")] ;
 
@@ -26,8 +24,6 @@ using namespace System::Runtime::InteropServices;
 //      Build Number
 //      Revision
 //
-
-[assembly:AssemblyVersionAttribute(Assembly_Version)];
 
 [assembly:ComVisible(false)] ;
 

@@ -23,8 +23,8 @@ namespace TestProject {
 			//
 			//TODO: Add the constructor code here
 			//
-			this->lbVersion->Text = this->ApplicationAssembly->GetName()->Version->ToString();
 			updater = gcnew Updater(this);
+			this->lbVersion->Text = this->ApplicationVersion->ToString();
 		}
 
 	protected:
@@ -98,19 +98,11 @@ namespace TestProject {
 #pragma endregion
 		
 #pragma region AutoUpdater
-	public: virtual property System::String^ ApplicationName
+	public: virtual property System::Version^ ApplicationVersion
 	{
-		System::String^ get()
+		System::Version^ get()
 		{
-			return L"TestProject";
-		}
-	}
-
-	public: virtual property System::String^ ApplicationId
-	{
-		System::String^ get()
-		{
-			return L"TestProject";
+			return gcnew Version(L"1.0");
 		}
 	}
 
@@ -130,11 +122,11 @@ namespace TestProject {
 		}
 	}
 
-	public: virtual property System::Uri^ UpdateConfigLocation
+	public: virtual property System::Uri^ UpdateInfoLocation
 	{
 		System::Uri^ get()
 		{
-			Uri^ uri = gcnew Uri(L"file:///D:/TestProject/update.xml");
+			Uri^ uri = gcnew Uri(L"file:///D:/TestProject/");
 			return uri;
 		}
 	}
