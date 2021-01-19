@@ -126,8 +126,7 @@ namespace TestProject {
 	{
 		System::Uri^ get()
 		{
-			Uri^ uri = gcnew Uri(L"file:///D:/TestProject/");
-			return uri;
+			return gcnew Uri(L"file:///D:/TestProject/");
 		}
 	}
 
